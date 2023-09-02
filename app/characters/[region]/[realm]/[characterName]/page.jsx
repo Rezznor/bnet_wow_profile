@@ -27,7 +27,8 @@ async function fetchCharacterInfo(region, realm, characterName) {
     profileData.characterSpec = characterInfoData.active_spec.name;
     profileData.characterGuild = characterInfoData.guild ? characterInfoData.guild.name : '';
     profileData.characterLevel = characterInfoData.level;
-    profileData.characterGear = []
+    profileData.characterItemLevel = characterInfoData.equipped_item_level;
+    profileData.characterGear = [];
     profileData.characterPortrait = characterMediaData.assets[0].value;
     
     characterEquipmentData.equipped_items.forEach((gear) => {
@@ -39,7 +40,7 @@ async function fetchCharacterInfo(region, realm, characterName) {
         if( !(gear.slot.type === "SHIRT" || gear.slot.type === "TABARD") ) {
             if('set' in gear) {
                 gear.set.items.forEach((setItem) => {
-                    itemSetPcs.push(setItem.item.id)
+                    itemSetPcs.push(setItem.item.id);
                 })
             }
             
@@ -57,7 +58,7 @@ async function fetchCharacterInfo(region, realm, characterName) {
             
             profileData.characterGear.push({
                 'id'        : gear.item.id, 
-                'slot_name' : gear.slot.name, 
+                'slot_name' : gear.slot.type, 
                 'item_name' : gear.name,
                 'bonus_list': gear.bonus_list,
                 'quality'   : gear.quality.name.toLowerCase(),
@@ -93,15 +94,12 @@ async function fetchCharacterInfo(region, realm, characterName) {
     profileData.characterGear.forEach((item) => {
         profileIconData.forEach((icon) => {
             if(item.id === icon.id) {
-                // console.log(item);
-                // console.log(icon);
                 if(icon.iconName === "inv_armor_celestial_d_01_cape.jpg") {
                     icon.iconName = "inv_cloth_dragonpvp_d_01_cape.jpg";
                 }
                 item.iconMediaName = icon.iconName;
             }
         })
-        //console.log(item);
     })
    
     return profileData;  
@@ -109,25 +107,65 @@ async function fetchCharacterInfo(region, realm, characterName) {
 
 const CharacterPage = async ({ params }) => {
     
-    //console.log(`Region ${params.region}, Realm: ${params.realm}, Character Name: ${params.characterName}`);
     const singleCharacter = await fetchCharacterInfo(params.region, params.realm, params.characterName.toLowerCase());
-    //console.log(singleCharacter);
+    const characterGearOrder = ['HEAD', 'NECK', 'SHOULDER', 'BACK', 'CHEST', 'WRIST', 'HANDS', 'WAIST', 'LEGS', 'FEET', 'FINGER_1', 'FINGER_2', 'TRINKET_1', 'TRINKET_2', 'MAIN_HAND', 'OFF_HAND']
+    singleCharacter.characterGear.sort((a, b) => characterGearOrder.indexOf(a.slot_name) - characterGearOrder.indexOf(b.slot_name));
     
     return (
-        <div>
-            <h2>Character Info Sheet</h2>
+        <div className={`w-full flex flex-row justify-center items-center text-gray-800 mt-60`}>
             
-            <Image src={singleCharacter.characterPortrait} width={84} height={84} alt='Character Portrait' />
+            <div className={`card w-3/4 mx-auto bg-white shadow-xl hover:shadow border-4 rounded-lg border-faction-${singleCharacter.characterFaction.toLowerCase()}`}>
+                
+                <Image 
+                    src={singleCharacter.characterPortrait} 
+                    className={`w-32 mx-auto rounded-full -mt-20 border-8 border-faction-${singleCharacter.characterFaction.toLowerCase()}`}
+                    width={84} 
+                    height={84} 
+                    alt='Character Portrait' 
+                />
+                <div className='text-center mt-2 text-3xl font-medium'>{singleCharacter.characterName}</div>
+                {
+                    !singleCharacter.characterGuild === '' ? <div className='text-center mt-2 font-light text-sm'> {"< " + singleCharacter.characterGuild + " >"}</div> : <></>
+                }
+                <div className='text-center font-normal text-lg'><span className='font-bold text-gear-epic'>{singleCharacter.characterItemLevel} </span>{singleCharacter.characterSpec + ' ' + singleCharacter.characterClass}</div>
+                <div className='px-6 text-center mt-2 font-light text-sm'>
+                    <p>Level {singleCharacter.characterLevel + ' ' + singleCharacter.characterRace + ' ' + singleCharacter.characterClass}</p>
+                </div>
+                <hr className='mt-8'></hr>
+                <div className='flex p-4'>
+                    <div className='w-1/2 text-center'>
+                        <span className='font-bold'>Current Season M+ Score</span> 2000
+                    </div>
+                    <div className='w-0 border border-gray-300'></div>
+                    <div className='w-1/2 text-center'>
+                        <span className='font-bold'></span>
+                    </div>
+                </div>
+                
+               
+                <ul key={singleCharacter.characterID} className="flex justify-center space-x-1">
+                    
+                    {singleCharacter.characterGear.map((item, index) => (
+                        
+                        <li key={index} className="">
+                            <Link href={`https://wowhead.com/item=${item.id}`} data-wowhead={`gems=${item.gems.join(':')}&ench=${item.enchants.toString()}&bonus=${item.bonus_list.join(':')}&pcs=${item.set_pcs.join(':')}&ilvl=${item.item_level}`}>
+                                <Image src={`/images/${item.iconMediaName}`} width={36} height={36} alt='Item' />
+                            </Link>
+                            <div className={`bg-gear-${item.quality} text-center`}>{item.item_level}</div>
+                        </li>
+                        
+                    ))}
+                </ul>
+                
+            </div>
+            
+{/*             
             
             <ul>
-                <li>{singleCharacter.characterName}</li>
+                
                 <li>{singleCharacter.characterRealm}</li>
                 <li>{singleCharacter.characterFaction}</li>
-                <li>{singleCharacter.characterRace}</li>
-                <li>{singleCharacter.characterClass}</li>
-                <li>{singleCharacter.characterSpec}</li>
-                <li>{singleCharacter.characterGuild}</li>
-                <li>{singleCharacter.characterLevel}</li>
+                
             </ul>
             
             <ul key={singleCharacter.characterID} className="flex">
@@ -140,7 +178,7 @@ const CharacterPage = async ({ params }) => {
                         <div className={`bg-gear-${item.quality} text-center`}>{item.item_level}</div>
                     </li>
                 ))}
-            </ul>
+            </ul> */}
                  
         </div>
     )
