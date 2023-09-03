@@ -11,6 +11,8 @@ async function fetchCharacterInfo(region, realm, characterName) {
     const characterInfoURL = `https://${region}.api.blizzard.com/profile/wow/character/${realm}/${characterName}?namespace=profile-us&locale=en_US&access_token=${process.env.access_token}`;
     const characterEquipmentURL = `https://${region}.api.blizzard.com/profile/wow/character/${realm}/${characterName}/equipment?namespace=profile-us&locale=en_US&access_token=${process.env.access_token}`;
     const characterMediaURL = `https://${region}.api.blizzard.com/profile/wow/character/${realm}/${characterName}/character-media?namespace=profile-us&locale=en_US&access_token=${process.env.access_token}`;
+    const characterMythicPlusURL = `https://${region}.api.blizzard.com/profile/wow/character/${realm}/${characterName}/mythic-keystone-profile?namespace=profile-us&locale=en_US&access_token=${process.env.access_token}`;
+    const characterRaidProgURL = `https://${region}.api.blizzard.com/profile/wow/character/${realm}/${characterName}/encounters/raids?namespace=profile-us&locale=en_US&access_token=${process.env.access_token}`;
 
     const response = await Promise.all([fetch(characterInfoURL), fetch(characterEquipmentURL), fetch(characterMediaURL)]);
     
