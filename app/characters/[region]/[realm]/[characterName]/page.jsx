@@ -14,17 +14,18 @@ async function fetchCharacterInfo(region, realm, characterName) {
     const characterMythicPlusURL = `https://${region}.api.blizzard.com/profile/wow/character/${realm}/${characterName}/mythic-keystone-profile?namespace=profile-us&locale=en_US&access_token=${process.env.access_token}`;
     const characterRaidProgURL = `https://${region}.api.blizzard.com/profile/wow/character/${realm}/${characterName}/encounters/raids?namespace=profile-us&locale=en_US&access_token=${process.env.access_token}`;
 
-    const response = await Promise.all([fetch(characterInfoURL), fetch(characterEquipmentURL), fetch(characterMediaURL)]);
+    const response = await Promise.all([fetch(characterInfoURL), fetch(characterEquipmentURL), fetch(characterMediaURL), fetch(characterMythicPlusURL), fetch(characterRaidProgURL)]);
     
     const characterInfoData = await response[0].json();
     const characterEquipmentData = await response[1].json();
     const characterMediaData = await response[2].json();
+    const characterMythicPlusData = await response[3].json();
+    const characterRaidProgData = await response[4].json();
     
     profileData.characterID = characterInfoData.id;
     profileData.characterName = characterInfoData.name;
     profileData.characterRealm = characterInfoData.realm.name;
     profileData.characterFaction = characterInfoData.faction.name;
-    profileData.characterRace = characterInfoData.race.name;
     profileData.characterClass = characterInfoData.character_class.name;
     profileData.characterSpec = characterInfoData.active_spec.name;
     profileData.characterGuild = characterInfoData.guild ? characterInfoData.guild.name : '';
@@ -32,6 +33,8 @@ async function fetchCharacterInfo(region, realm, characterName) {
     profileData.characterItemLevel = characterInfoData.equipped_item_level;
     profileData.characterGear = [];
     profileData.characterPortrait = characterMediaData.assets[0].value;
+    profileData.characterMPlusScore = characterMythicPlusData.current_mythic_rating ? characterMythicPlusData.current_mythic_rating.rating : "0";
+    profileData.characterRaidProg = [];
     
     characterEquipmentData.equipped_items.forEach((gear) => {
         
@@ -75,6 +78,37 @@ async function fetchCharacterInfo(region, realm, characterName) {
         }
     })
     
+    characterRaidProgData.expansions.forEach((xpac) => {
+        if(xpac.expansion.name === "Dragonflight") {
+            xpac.instances.forEach((raid) => {
+        
+                var raidProgAllDiffs = [];
+                var raidShort = '';
+                
+                if(raid.instance.name === 'Vault of the Incarnates') {
+                    raidShort = 'VOTI';
+                } else if(raid.instance.name === 'Aberrus, the Shadowed Crucible') {
+                    raidShort = 'ATSB'
+                }
+                
+                raid.modes.forEach((raidDiff) => {
+                    raidProgAllDiffs.push({
+                        'difficulty': raidDiff.difficulty.type,
+                        'diff_prog': raidDiff.progress.completed_count,
+                        'raid_boss_count': raidDiff.progress.total_count
+                    })
+                    //console.log(raid.instance.name + " " + raidDiff.difficulty.type + " " + raidDiff.progress.completed_count);
+                })
+
+                profileData.characterRaidProg.push({
+                    'raid_name': raid.instance.name,
+                    'raid_short': raidShort,
+                    'raid_prog': raidProgAllDiffs,
+                })
+            })
+        }        
+    })
+
     profileMediaData.forEach((id) => {
         profileMediaURLS.push((`https://us.api.blizzard.com/data/wow/media/item/${id}?namespace=static-us&locale=en_US&access_token=${process.env.access_token}`));
     })
@@ -103,7 +137,7 @@ async function fetchCharacterInfo(region, realm, characterName) {
             }
         })
     })
-   
+    
     return profileData;  
 }
 
@@ -112,7 +146,7 @@ const CharacterPage = async ({ params }) => {
     const singleCharacter = await fetchCharacterInfo(params.region, params.realm, params.characterName.toLowerCase());
     const characterGearOrder = ['HEAD', 'NECK', 'SHOULDER', 'BACK', 'CHEST', 'WRIST', 'HANDS', 'WAIST', 'LEGS', 'FEET', 'FINGER_1', 'FINGER_2', 'TRINKET_1', 'TRINKET_2', 'MAIN_HAND', 'OFF_HAND']
     singleCharacter.characterGear.sort((a, b) => characterGearOrder.indexOf(a.slot_name) - characterGearOrder.indexOf(b.slot_name));
-    
+
     return (
         <div className={`w-full flex flex-row justify-center items-center text-gray-800 mt-60`}>
             
@@ -129,22 +163,16 @@ const CharacterPage = async ({ params }) => {
                 {
                     !singleCharacter.characterGuild === '' ? <div className='text-center mt-2 font-light text-sm'> {"< " + singleCharacter.characterGuild + " >"}</div> : <></>
                 }
-                <div className='text-center font-normal text-lg'><span className='font-bold text-gear-epic'>{singleCharacter.characterItemLevel} </span>{singleCharacter.characterSpec + ' ' + singleCharacter.characterClass}</div>
-                <div className='px-6 text-center mt-2 font-light text-sm'>
-                    <p>Level {singleCharacter.characterLevel + ' ' + singleCharacter.characterRace + ' ' + singleCharacter.characterClass}</p>
-                </div>
-                <hr className='mt-8'></hr>
-                <div className='flex p-4'>
-                    <div className='w-1/2 text-center'>
-                        <span className='font-bold'>Current Season M+ Score</span> 2000
-                    </div>
-                    <div className='w-0 border border-gray-300'></div>
-                    <div className='w-1/2 text-center'>
-                        <span className='font-bold'></span>
-                    </div>
+                <div className='font-bold text-2xl text-gear-epic text-center'>{singleCharacter.characterItemLevel}</div>
+                
+                <div className='px-6 text-center mt-2 font-light text-md'>
+                    
+                    <p>Level {singleCharacter.characterLevel + ' ' + singleCharacter.characterSpec + ' ' + singleCharacter.characterClass}</p>
+                    
                 </div>
                 
-               
+                <hr className='my-4'></hr>
+                
                 <ul key={singleCharacter.characterID} className="flex justify-center space-x-1">
                     
                     {singleCharacter.characterGear.map((item, index) => (
@@ -153,34 +181,46 @@ const CharacterPage = async ({ params }) => {
                             <Link href={`https://wowhead.com/item=${item.id}`} data-wowhead={`gems=${item.gems.join(':')}&ench=${item.enchants.toString()}&bonus=${item.bonus_list.join(':')}&pcs=${item.set_pcs.join(':')}&ilvl=${item.item_level}`}>
                                 <Image src={`/images/${item.iconMediaName}`} width={36} height={36} alt='Item' />
                             </Link>
-                            <div className={`bg-gear-${item.quality} text-center`}>{item.item_level}</div>
+                            <div className={`bg-gear-${item.quality} text-center mt-1 text-white text-sm font-bold rounded`}>{item.item_level}</div>
                         </li>
                         
                     ))}
                 </ul>
                 
-            </div>
-            
-{/*             
-            
-            <ul>
+                <hr className='my-4'></hr>
                 
-                <li>{singleCharacter.characterRealm}</li>
-                <li>{singleCharacter.characterFaction}</li>
-                
-            </ul>
-            
-            <ul key={singleCharacter.characterID} className="flex">
-                {singleCharacter.characterGear.map((item, index) => (
+                <div className='flex p-4'>
                     
-                    <li key={index} className="">
-                        <Link href={`https://wowhead.com/item=${item.id}`} data-wowhead={`gems=${item.gems.join(':')}&ench=${item.enchants.toString()}&bonus=${item.bonus_list.join(':')}&pcs=${item.set_pcs.join(':')}&ilvl=${item.item_level}`}>
-                            <Image src={`/images/${item.iconMediaName}`} width={48} height={48} alt='Item' />
-                        </Link>
-                        <div className={`bg-gear-${item.quality} text-center`}>{item.item_level}</div>
-                    </li>
-                ))}
-            </ul> */}
+                    <div className='w-1/2'>
+                        
+                        <h2 className='font-bold text-2xl text-center mb-4'>Raid Prog</h2>
+                        <div className='flex space-x-8'>
+                            {singleCharacter.characterRaidProg.map((raid, index) => (
+                                <div key={index} className=''>
+                                    <h3 className='font-bold text-md'>{raid.raid_short}</h3>
+                                    <ul>
+                                        {raid.raid_prog.map((instance, index) => (
+                                            <li key={index} className=''><span className={`font-bold text-raid_${instance.difficulty}`}>{instance.difficulty}</span>{": " + instance.diff_prog + "/" + instance.raid_boss_count}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                        
+                    </div>
+                    
+                    <div className='w-0 border border-gray-300'></div>
+                    
+                    <div className='w-1/2 text-center'>
+                        
+                        <h2 className='font-bold text-2xl text-center mb-4'>Current Season M+ Score</h2>
+                        <h3 className='font-bold text-xl'>{Math.round(singleCharacter.characterMPlusScore)}</h3>
+                        
+                    </div>
+                    
+                </div>
+                
+            </div>
                  
         </div>
     )
