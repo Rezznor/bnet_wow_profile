@@ -35,6 +35,8 @@ yarn-error.log*
 next-env.d.ts
 
 # icons
-/public
+/public/app_wow_icons
+/public/images
 .env
 
+.env

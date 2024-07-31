@@ -88,7 +88,9 @@ async function fetchCharacterInfo(region, realm, characterName) {
                 if(raid.instance.name === 'Vault of the Incarnates') {
                     raidShort = 'VOTI';
                 } else if(raid.instance.name === 'Aberrus, the Shadowed Crucible') {
-                    raidShort = 'ATSB'
+                    raidShort = 'ATSB';
+                } else if(raid.instance.name === "Amirdrassil, the Dream's Hope") { 
+                    raidShort = 'ATDH';
                 }
                 
                 raid.modes.forEach((raidDiff) => {
@@ -193,7 +195,7 @@ const CharacterPage = async ({ params }) => {
                     
                     <div className='w-1/2'>
                         
-                        <h2 className='font-bold text-2xl text-center mb-4'>Raid Prog</h2>
+                        <h2 className='font-bold text-2xl text-center mb-4'>Raid Progress</h2>
                         <div className='flex space-x-8'>
                             {singleCharacter.characterRaidProg.map((raid, index) => (
                                 <div key={index} className=''>
@@ -213,7 +215,7 @@ const CharacterPage = async ({ params }) => {
                     
                     <div className='w-1/2 text-center'>
                         
-                        <h2 className='font-bold text-2xl text-center mb-4'>Current Season M+ Score</h2>
+                        <h2 className='font-bold text-2xl text-center mb-4'>Current Season Mythic+ Score</h2>
                         <h3 className='font-bold text-xl'>{Math.round(singleCharacter.characterMPlusScore)}</h3>
                         
                     </div>

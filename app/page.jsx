@@ -43,16 +43,16 @@ const Homepage = async () => {
                 </div>
             </div>
             
-            <div className="px-4 py-6 sm:px-0">
+            <div className="mx-auto w-1/2 px-4 py-6 sm:px-0">
                 <h4 className="text-lg font-bold leading-6 text-white">Example Characters</h4>
                 <span className="mt-1 text-sm leading-6 text-white sm:col-span-2 sm:mt-0">
                     {"To test the app, I've provided a couple characters of popular players below."}
                 </span>
-                <table className='mx-auto w-1/2 mt-12'>
+                <table className='w-1/2 mt-12'>
                     <thead>
                         <tr>
-                            <th>Realm Name</th>
-                            <th>Character Name</th>
+                            <th className="text-left">Realm Name</th>
+                            <th className="text-left">Character Name</th>
                         </tr>
                     </thead>
                     <tbody>

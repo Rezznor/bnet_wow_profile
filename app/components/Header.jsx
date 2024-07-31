@@ -8,7 +8,7 @@ const Header = () => {
 					href='/'
 					className='text-5xl '
 				>
-					<span className='text-giga-green'>LFR</span> Heroes
+					<span className=''>Hallowfall</span> 
 				</Link>
 			</div>
 			<button className='btn btn-primary'>Bnet Login</button>

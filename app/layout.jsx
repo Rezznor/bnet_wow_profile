@@ -10,7 +10,7 @@ const poppins = Poppins({
 })
 
 export const metadata = {
-  title: 'LFR Heroes',
+  title: 'Hallowfall',
   description: 'Lookup your WoW characters!',
 }
 
