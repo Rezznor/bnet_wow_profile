@@ -1,34 +1,24 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Welcome to Hallowfall
+Hallowfall is a prototype application built with Next.js and Tailwindcss to learn and get comfortable with Blizzard's Battle.net API for World of Warcraft.
 
-## Getting Started
+The app is currently being rewritten in Typescript and will be utilizing Next.js 14 for its Server Actions features, Auth.js to handle user authentication and login to the users Battle.net account and a MongoDB with Prisma ORM, to store both user access tokens as well as a user profile and relevant profile data from their linked Battle.net account. 
 
-First, run the development server:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+This version of the app will not be hosted for testing. 
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Example Images
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### Homepage
+The homepage of Hallowfall contains a search function that any user can use, logged in or not, to find any character in World of Warcraft. The realm list is a populated dropdown menu of all the available realms in the US region. This will be expanded to all regions in the next version. 
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+I have provided a few examples of top ranked players to use as examples.
+![Hallowfall Homepage](public/example/homepage.png)
 
-## Learn More
+### Profile view
+The profile view contains a rough mockup for the character returned in the search. 
+![Hallowfall Profile Page](public/example/profile.png)
 
-To learn more about Next.js, take a look at the following resources:
+### Profile Features
+The profile highlights a few important aspects of the character which includes Raid Progression, Mythic+ Progression, the Characters Gear, and an image of the character. The gear section displays the appropriate icons for the items equipped and when hovering over the icons, displays the correct tooltip for the item. The tooltips are generated using the item data and a useful tool provided by Wowhead.com. 
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+![Hallowfall Profile Features](public/example/tooltips.png)
